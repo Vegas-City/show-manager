@@ -1,0 +1,29 @@
+{
+  "name": "show-manager",
+  "version": "1.0.0",
+  "description": "Decentraland Show Manager",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vegas-City/show-manager.git"
+  },
+  "author": "Vegas City",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Vegas-City/show-manager/issues"
+  },
+  "homepage": "https://github.com/Vegas-City/show-manager#readme",
+  "devDependencies": {
+    "@dcl/sdk": "^7.3.1",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@dcl-sdk/utils": "^1.1.2",
+    "dcl-ui-toolkit": "^0.9.1",
+    "sdk7-npc-utils": "^1.0.0"
+  }
+}
