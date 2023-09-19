@@ -1,6 +1,6 @@
 ## Show Management
 
-Show Management Library enables you to schedule videos and synchronize actions with those videos to make a much more immersive show. 
+Show Management Library enables you to schedule videos and synchronize actions with those videos to create a much more immersive show. 
 
 
 # Show Manager Documentation
@@ -32,24 +32,8 @@ To use any of the helpers provided by this library:
 2. Add this line at the start of your game.ts file, or any other TypeScript files that require it:
 
    ```ts
-   import * as showMgmt from '@dcl/show-management'
+   import * as showMgmt from 'show-manager/dist'
    ```
-
-To be recognized you may also have to add an entry in tsconfig.json under paths
-
-```
-{
-  "compilerOptions": {
-    ...
-    "paths": {
-		 "@dcl/show-management": [
-		        "node_modules/@dcl/show-management/dist/index.d.ts",
-		        "node_modules\\@dcl\\show-management\\dist\\index.d.ts"
-		      ]
-	}
-	...
-}
-```
 
 
 ## Usage
@@ -60,7 +44,7 @@ To be recognized you may also have to add an entry in tsconfig.json under paths
 You will need need to create a ShowManager instance to start and assign it a schedule
 
 ```ts
-import * as showMgmt from '@dcl/show-management'
+import * as showMgmt from 'show-manager/dist'
 
 const showData: showMgmt.ShowDataType = ...
 
@@ -77,7 +61,7 @@ You must create showData that will define what shows to play and when.
 ####
 
 ```ts
-const defaultShow:ShowType = {
+const defaultShow: showMgmt.ShowType = {
   id: -1, //
   title: "Intermission",//the title of the show
   artist: "Artist Name", //name of the artist
@@ -88,7 +72,7 @@ const defaultShow:ShowType = {
   loop: true //if the video should loop when over
 }
 
-const showData: ShowDataType = {
+const showData: showMgmt.ShowDataType = {
   defaultShow: defaultShow,
   shows: [
 		{
@@ -102,21 +86,22 @@ const showData: ShowDataType = {
 		  loop: false //if the video should loop when over
 		}
 	]
+}
 ```
 
-NOTE:  You maybe tempted to use ISO 8601 date format however there is no garetee 100% support it will be parsed correctly.  ISO 8601 format is the most universally supported however you cannot rely on correct implementation of the standard.  https://en.wikipedia.org/wiki/ISO_8601
+NOTE:  You maybe tempted to use ISO 8601 date format, however there is no garetee 100% support it will be parsed correctly. ISO 8601 format is the most universally supported, however you cannot rely on correct implementation of the standard.  https://en.wikipedia.org/wiki/ISO_8601
 
 ```
 new Date("2022-05-09T16:39:00-04:00").getTime()/1000 //use at your own risk
 ```
 
-Here is one of many free helpful converter tools [https://www.epochconverter.com/](https://www.epochconverter.com/) to you convert to date and time to seconds for startTime
+Here is one of many free helpful converter tools [https://www.epochconverter.com/](https://www.epochconverter.com/) to you convert a date and time to seconds for startTime
 
 
 #### Configure Show Example
 
 ```ts
-import * as showMgmt from '@dcl/show-management'
+import * as showMgmt from 'show-manager/dist'
 
 //while testing this can ensure the video start time is always 5 seconds after scene load
 const testStartTime = new Date(Date.now() + (5 *1000)).getTime() / 1000   
@@ -126,14 +111,14 @@ const showData: showMgmt.ShowDataType = {
   shows: [
 		defaultShow,
 		{ 
-	    id: 1,
-	    title: 'Demo Show',
-	    artist: 'Demo Show',
-	    link: `videos/tunnelVisuals.mp4`,
-	    subs: DemoShowSubs, //this is a variable holding the SRT format
-	    startTime: testStartTime, //start time from UTC in seconds
-	    length: 28,
-	  }
+		  id: 1,
+		  title: 'Demo Show',
+		  artist: 'Demo Show',
+		  link: `videos/tunnelVisuals.mp4`,
+		  subs: DemoShowSubs, //this is a variable holding the SRT format
+		  startTime: testStartTime, //start time from UTC in seconds
+		  length: 28,
+		}
 	]
 }
 ```
@@ -141,7 +126,7 @@ const showData: showMgmt.ShowDataType = {
 
 ### Syncing Actions to Video
 
-To sync action to video we make use of a subtitle file format called SubRip Subtitle (SRT). 
+To sync actions to a video we make use of a subtitle file format called SubRip Subtitle (SRT). 
 
 If you would like to learn more about SRT format check these out
 
@@ -170,46 +155,45 @@ See [Show Action Handlers](#Show-Action-Handlers) for how the actions in the sub
 ### Run Your Show
 
 
-You will need need to create a RunOfShowSystem instance should you want the show to play by it self when the startTime dictage
+You will need need to create a RunOfShowSystem instance should you want the show to play by itself when the startTime dictates
 
 ```ts
-import * as showMgmt from '@dcl/show-management'
+import * as showMgmt from 'show-manager/dist'
 
 export const runOfShow = new showMgmt.RunOfShowSystem(SHOW_MGR)
-engine.addSystem(runOfShow)
 
 ```
 
 
 ### Event Listeners
 
-The Show Manager has no knowlege of your scene and how it should react to the videos.  So your scene react to show events registering to the provided event listeners
+The Show Manager has no knowlege of your scene and how it should react to the videos. To solve this, we need to register show events to the provided event listeners
 
 * addStopShowListeners
 * addPlayVideoListeners
 * addVideoStatusChangeListener
 
 ```ts
-import * as showMgmt from '@dcl/show-management'
+import * as showMgmt from 'show-manager/dist'
 
 SHOW_MGR.addStopShowListeners( (event:showMgmt.StopShowEvent)=>{
-  log("addStopShowListeners fired",event)
+  console.log("addStopShowListeners fired", event)
   
   ...  
 } )
 
  
 SHOW_MGR.addPlayVideoListeners( (event:showMgmt.PlayShowEvent)=>{
-  log("addPlayVideoListeners fired",event)
+  console.log("addPlayVideoListeners fired", event)
   
   ...
 } )
 
-SHOW_MGR.addVideoStatusChangeListener( new showMgmt.VideoChangeStatusListener((oldStatus: VideoStatus, newStatus: VideoStatus)=>{
-  log("addVideoStatuChangeListener fired",oldStatus,newStatus)
+SHOW_MGR.addVideoStatusChangeListener( new showMgmt.VideoChangeStatusListener((oldStatus: VideoState, newStatus: VideoState)=>{
+  console.log("addVideoStatuChangeListener fired", oldStatus, newStatus)
   
   switch(newStatus){
-    case VideoStatus.LOADING:
+    case VideoState.VS_LOADING:
 
     break;
     ...
@@ -222,7 +206,7 @@ SHOW_MGR.addVideoStatusChangeListener( new showMgmt.VideoChangeStatusListener((o
 ### Display the Show Video
 
 
-The Show Manager will create a video texture but does not know where to put it in your scene.  You can register to SHOW_MGR.addPlayVideoListeners and assign the video texture where it needs to go.
+The Show Manager will create a video texture but does not know where to put it in your scene. You can register to SHOW_MGR.addPlayVideoListeners and assign the video texture where it needs to go.
 
 ```ts
 
