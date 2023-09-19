@@ -210,35 +210,47 @@ The Show Manager will create a video texture but does not know where to put it i
 
 ```ts
 
-export const videoMat = new Material()
-
-//create video material
-videoMat.castShadows = false
-videoMat.metallic = 0
-videoMat.roughness = 1
-videoMat.emissiveIntensity = 1
-videoMat.emissiveColor = Color3.White()
-videoMat.alphaTest = 1
+//create a video material
+const videoMat: PBMaterial_PbrMaterial = {
+	castShadows: false,
+	metallic: 0,
+	roughness: 1,
+	emissiveIntensity: 1,
+	emissiveColor: Color3.White(),
+	alphaTest: 1
+}
 
 //create entity
-export const myScreenEntity = new Entity()
-const myScreenPlane = new PlaneShape()
-myScreenEntity.addComponent(myScreenPlane)
+const myScreenEntity = engine.addEntity()
+MeshRenderer.setPlane(myScreenEntity)
 
 //add material
-myScreenEntity.addComponent(videoMat)
-
-//add to engine
-engine.addEntity(myScreenEntity)
+Material.setPbrMaterial(myScreenEntity, videoMat)
 
 SHOW_MGR.addPlayVideoListeners( (event:showMgmt.PlayShowEvent)=>{
-  log("addPlayVideoListeners fired",event)
+  console.log("addPlayVideoListeners fired", event)
   
   //assign the playing video to a material so it can be visible in scene
-  if(event.videoTexture){ 
-    videoMat.albedoTexture = event.videoTexture
-    videoMat.alphaTexture  = event.videoTexture
-    videoMat.emissiveTexture = event.videoTexture
+  if (event.videoPlayerEntity) {
+  	//get the video texture from the video player entity
+  	const videoTexture = Material.Texture.Video({ videoPlayerEntity: event.videoPlayerEntity })
+
+  	//create a new material that has the video texture
+  	const videoMat: PBMaterial_PbrMaterial = {
+  		castShadows: false,
+                metallic: 0,
+                roughness: 1,
+                emissiveIntensity: 1,
+                emissiveColor: Color3.White(),
+                alphaTest: 1,
+                texture: videoTexture,
+                alphaTexture: videoTexture,
+                emissiveTexture: videoTexture
+  	}
+
+  	//delete the old material from the screen and assign the new one
+  	Material.deleteFrom(myScreenEntity)
+  	Material.setPbrMaterial(myScreenEntity, videoMat)
   }
 } )
 ```
