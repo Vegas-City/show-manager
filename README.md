@@ -210,35 +210,47 @@ The Show Manager will create a video texture but does not know where to put it i
 
 ```ts
 
-export const videoMat = new Material()
-
-//create video material
-videoMat.castShadows = false
-videoMat.metallic = 0
-videoMat.roughness = 1
-videoMat.emissiveIntensity = 1
-videoMat.emissiveColor = Color3.White()
-videoMat.alphaTest = 1
+//create a video material
+const videoMat: PBMaterial_PbrMaterial = {
+	castShadows: false,
+	metallic: 0,
+	roughness: 1,
+	emissiveIntensity: 1,
+	emissiveColor: Color3.White(),
+	alphaTest: 1
+}
 
 //create entity
-export const myScreenEntity = new Entity()
-const myScreenPlane = new PlaneShape()
-myScreenEntity.addComponent(myScreenPlane)
+const myScreenEntity = engine.addEntity()
+MeshRenderer.setPlane(myScreenEntity)
 
 //add material
-myScreenEntity.addComponent(videoMat)
-
-//add to engine
-engine.addEntity(myScreenEntity)
+Material.setPbrMaterial(myScreenEntity, videoMat)
 
 SHOW_MGR.addPlayVideoListeners( (event:showMgmt.PlayShowEvent)=>{
-  log("addPlayVideoListeners fired",event)
+  console.log("addPlayVideoListeners fired", event)
   
   //assign the playing video to a material so it can be visible in scene
-  if(event.videoTexture){ 
-    videoMat.albedoTexture = event.videoTexture
-    videoMat.alphaTexture  = event.videoTexture
-    videoMat.emissiveTexture = event.videoTexture
+  if (event.videoPlayerEntity) {
+  	//get the video texture from the video player entity
+  	const videoTexture = Material.Texture.Video({ videoPlayerEntity: event.videoPlayerEntity })
+
+  	//create a new material that has the video texture
+  	const videoMat: PBMaterial_PbrMaterial = {
+  		castShadows: false,
+                metallic: 0,
+                roughness: 1,
+                emissiveIntensity: 1,
+                emissiveColor: Color3.White(),
+                alphaTest: 1,
+                texture: videoTexture,
+                alphaTexture: videoTexture,
+                emissiveTexture: videoTexture
+  	}
+
+  	//delete the old material from the screen and assign the new one
+  	Material.deleteFrom(myScreenEntity)
+  	Material.setPbrMaterial(myScreenEntity, videoMat)
   }
 } )
 ```
@@ -249,19 +261,18 @@ In this example I want to show a countdown to when the next show will be.  Regis
 
 ```ts
 SHOW_MGR.addPlayVideoListeners( (event:showMgmt.PlayShowEvent)=>{
-  log("addPlayVideoListeners fired",event)
+  console.log("addPlayVideoListeners fired", event)
 
   //if I know the intermission show ID I can check for it and perform a very specific action
   if(event.showData.id == -1){ 
-    const showRange = SHOW_MGR.showSchedule.findShowToPlayByDate( new Date() ) 
+    const showRange = SHOW_MGR.showSchedule.findShowToPlayByDate( new Date() )
+    const showArr = []
     if(showRange.nextShow && showRange.nextShow.show){   
-	    startNextShowCounter(showRange.nextShow)
-    } 
-  }else{
-  	hideShowCounter()
+    	showArr.push(showRange.nextShow.show)
+    }
+    startNextShowCounter(showArr)
   }
- 
-} )
+})
 
 ```
 
@@ -270,10 +281,10 @@ SHOW_MGR.addPlayVideoListeners( (event:showMgmt.PlayShowEvent)=>{
 
 ```ts
  
-isPreviewMode().then(preview=>{
-  if(preview) {
-    SHOW_MGR.enableDebugUI(preview)
-    registerWithDebugUI( SHOW_MGR.manageShowDebugUI,SHOW_MGR, runOfShow  ) 
+isPreviewMode({}).then(result => {
+  if(result && result.isPreview) {
+    SHOW_MGR.enableDebugUI(result.isPreview)
+    showMgmt.registerWithDebugUI(SHOW_MGR.manageShowDebugUI, SHOW_MGR, runOfShow) 
   }
 })
 
@@ -283,7 +294,7 @@ isPreviewMode().then(preview=>{
 
 Show action handlers are what convert the commands in the subtitle file into something in your scene
 
-There are three types of handlers provided.  Ones that have all the functionality they need and some that need you extend them.  The latter require you to define how they function because there is no way to know exactly how each show will want to implement it.  For example the PAUSE action could mean lots of things, pause 1 animation but play another, hide one entity but show a different entity.  There is no way to predict all this so you must define it.  The third type are onces that you make yourself.
+There are three types of handlers provided.  Ones that have all the functionality they need and some that need you to extend them. The latter require you to define how they function because there is no way to know exactly how each show will want to implement it. For example, the PAUSE action could mean lots of things, pause 1 animation but play another, hide one entity but show a different entity. There is no way to predict all this, so you must define it. The third type are onces that you make yourself.
 
 Provided handlers with all functionality provided include
 
@@ -299,18 +310,18 @@ Handlers that are recommended you to extend them by defining how they should fun
 
 #### Show Action Handler Interface
 
-All action handlers implement a ShowActionHandler.  Matches(), Execute() and DecodeAction() are the most important methods.  Matches tests to see if the handler can process the action,  Execute processes it and DecodeAction provides a way to parse the action to a more structured object 
+All action handlers implement a ShowActionHandler. Matches(), Execute() and DecodeAction() are the most important methods. Matches tests to see if the handler can process the action, Execute processes it and DecodeAction provides a way to parse the action to a more structured object 
 
 ```
 interface ShowActionHandler<T>{
   // will test if the action sent can be procssed by this handler  
-  matches(action:string,showActionMgr:ShowActionManager):boolean
+  matches(action:string, showActionMgr: showMgmt.ShowActionManager):boolean
   
   // if matches() returns true, execute will be called to process the action 
-  execute(action:string,showActionMgr:ShowActionManager):void
+  execute(action:string, showActionMgr: showMgmt.ShowActionManager):void
   
   // Will decode/parse the action into a more meaningful structure 
-  decodeAction(action:string,showActionMgr:ShowActionManager):ActionParams<T>
+  decodeAction(action:string, showActionMgr: showMgmt.ShowActionManager):ActionParams<T>
   
   ....
 }
@@ -353,7 +364,7 @@ You can implement your own parser if need be.
 
 #### Override Action Handler Behavior
 
-To define override an action handler should behave, you must provide a process method.  In this example here it defines how the Anounce action handler should behave.
+To define override an action handler should behave, you must provide a process method. In this example here it defines how the Anounce action handler should behave.
 
 You can initiate your own version of the class
 
@@ -362,7 +373,7 @@ SHOW_MGR.actionMgr.registerHandler(
   new showMgmt.ShowAnounceActionHandler( {
     process(action: showMgmt.ActionParams<showMgmt.ActionHandlerAnouncementParams>, showActionMgr: showMgmt.ShowActionManager): void {
       //my custom process logic
-      ui.displayAnnouncement(action.params.text,action.params.duration)
+      ui.createComponent(ui.Announcement, { value: action.params.text, duration: action.params.duration, startHidden: false })
     }
   } )
 )
@@ -372,12 +383,12 @@ OR fetch the existing one and overwrite its process callback
 
 ```ts
 //example of how to extend the action by setting processExt callback
-const accounceHandler:showMgmt.ShowAnounceActionHandler 
+const accounceHandler: showMgmt.ShowAnounceActionHandler 
   = SHOW_MGR.actionMgr.getRegisteredHandler<showMgmt.ShowAnounceActionHandler>(showMgmt.ShowAnounceActionHandler.DEFAULT_NAME)
 
 accounceHandler.process = (action: showMgmt.ActionParams<showMgmt.ActionHandlerAnouncementParams>, showActionMgr: showMgmt.ShowActionManager): boolean {
   const METHOD_NAME = "process"
-  accounceHandler.logger.debug(METHOD_NAME,"called",action)
+  accounceHandler.logger.debug(METHOD_NAME, "called", action)
 
   return true
 }
@@ -385,16 +396,16 @@ accounceHandler.process = (action: showMgmt.ActionParams<showMgmt.ActionHandlerA
 
 #### Extend Action Handler Behavior
 
-To extend an action handler behavior, can provide processExt method.  In this example here it defines how to extend PauseAll action handler.
+To extend an action handler behavior, we can provide a processExt method. In this example here it defines how to extend PauseAll action handler.
 
 ```ts
 //example of how to extend the action by setting processExt callback
-const pauseHandler:showMgmt.ShowPauseAllActionHandler 
+const pauseHandler: showMgmt.ShowPauseAllActionHandler 
   = SHOW_MGR.actionMgr.getRegisteredHandler<showMgmt.ShowPauseAllActionHandler>(showMgmt.ShowPauseAllActionHandler.DEFAULT_NAME)
 
 pauseHandler.processExt = (action: showMgmt.ActionParams<string>, showActionMgr: showMgmt.ShowActionManager): boolean {
   const METHOD_NAME = "processExt"
-  pauseHandler.logger.debug(METHOD_NAME,"called",action)
+  pauseHandler.logger.debug(METHOD_NAME, "called", action)
 
   //pause actions goes here
   //some actions "stop" is a play or hide or show or stop
@@ -413,7 +424,7 @@ const pauseHandler:showMgmt.ShowPauseAllActionHandler
 
 pauseHandler.addOnProcessListener( (action: showMgmt.ActionParams<string>, showActionMgr: showMgmt.ShowActionManager): boolean => {
   const METHOD_NAME = "addOnProcessListener"
-  pauseHandler.logger.debug(METHOD_NAME,"called",action)
+  pauseHandler.logger.debug(METHOD_NAME, "called", action)
 
   //pause actions goes here
   //some actions "stop" is a play or hide or show or stop
@@ -424,20 +435,20 @@ pauseHandler.addOnProcessListener( (action: showMgmt.ActionParams<string>, showA
 
 ### Make Your Own Show Action Handler
 
-Here is an example of how to make your very own action handler.  In this example we make a new action named "SAY" followed by the text to be said and register it to the show manager.
+Here is an example of how to make your very own action handler. In this example we make a new action named "SAY" followed by the text to be said and register it to the show manager.
 
 An example where no arguments are required
 
 ```ts
 SHOW_MGR.actionMgr.registerHandler(
-  new  showMgmt.ShowBasicActionHandler( 
+  new showMgmt.ShowBasicActionHandler( 
     "SAY_HI",
     {
       process(action: showMgmt.ActionParams<string>, showActionMgr: showMgmt.ShowActionManager): boolean {
-        ui.displayAnnouncement('HI',1)
+        ui.createComponent(ui.Announcement, { value: 'HI', duration: 1, startHidden: false })
         return true 
       }
-    } )
+    })
 )
 ```
 
@@ -447,28 +458,28 @@ Example where you want to pass arguments.
 
 //define custom parameter object type
 type ActionTypeSay={
-  text?:string
-  duration?:number
+  text?: string
+  duration?: number
 }
 
 //action will be used as follows
 //SAY words {"duration":"1"}
 SHOW_MGR.actionMgr.registerHandler(
-  new  showMgmt.ShowActionHandlerSupport<ActionTypeSay>( 
+  new showMgmt.ShowActionHandlerSupport<ActionTypeSay>( 
     "SAY",
     {
-      matches(action: string,showActionMgr:showMgmt.ShowActionManager):boolean{ 
-        return showMgmt.actionStartsWith(action,this.getName(),0," ")
+      matches(action: string, showActionMgr: showMgmt.ShowActionManager):boolean{ 
+        return showMgmt.actionStartsWith(action, this.getName(), 0, " ")
       },
       decodeAction(action: string, showActionMgr: showMgmt.ShowActionManager):showMgmt.ActionParams<ActionTypeSay>{
-        logger.debug("ACTION.SAY.decodeAction","called",action)
+        logger.debug("ACTION.SAY.decodeAction", "called", action)
         const decoded = showMgmt.parseActionWithOpts<ActionTypeSay>(action)
         
         let text = ""
         //join the params back together, all except the json one
         //it would be easier to pass all arguments as part of the json BUT
         //this demonstrates how you can transform the parsed params if need be
-        for(let x=1;x<decoded.array.length;x++){
+        for(let x=1; x<decoded.array.length; x++){
           //check for beginning of json
           if(decoded.array[x].charAt(0)=='{')  break; 
           text += decoded.array[x] + " "
@@ -481,7 +492,7 @@ SHOW_MGR.actionMgr.registerHandler(
       },
       process(action: showMgmt.ActionParams<ActionTypeSay>, showActionMgr: showMgmt.ShowActionManager): boolean {
         const duration = action.params.duration ? action.params.duration : 1
-        ui.displayAnnouncement(action.params.text,duration)
+        ui.createComponent(ui.Announcement, { value: action.params.text, duration: duration, startHidden: false })
 
         return true
       }
@@ -491,7 +502,7 @@ SHOW_MGR.actionMgr.registerHandler(
 
 ### Adjust Logging Levels
 
-To avoid flooding logs each class has its own logger named by class name.  You can adjust logging levels for all classes or just a few to suit your needs
+To avoid flooding logs, each class has its own logger named by class name. You can adjust logging levels for all classes or just a few to suit your needs.
 
 Classes of interest
 
@@ -500,12 +511,12 @@ Classes of interest
 * SubtitleVideoSystem - system that processes video events
 * SubtitleSystem - system that handles processing subtitles
 * ShowActionManager - processes an actions to be sent to a handler
-* ShowActionHandler - the action handlers them self
+* ShowActionHandler - the action handlers themselves
 
 
 ```ts
 //create a named logger
-const logger:showMgmt.Logger = showMgmt.LoggerFactory.getLogger("MyScene.ShowSetup.ts")
+const logger: showMgmt.Logger = showMgmt.LoggerFactory.getLogger("MyScene.ShowSetup.ts")
 
 //set logger for a specific logger
 logger.setLevel(showMgmt.LogLevel.DEBUG)
@@ -514,7 +525,7 @@ logger.setLevel(showMgmt.LogLevel.DEBUG)
 showMgmt.LoggingConfiguration.getInstance().defaultLevel = showMgmt.LogLevel.DEBUG
 
 //set logger for a specific action handler logger
-const logHandlerAnimation = showMgmt.LoggerFactory.getLogger("ShowActionHandler."+showMgmt.ShowAnimationActionHandler.DEFAULT_NAME)
+const logHandlerAnimation = showMgmt.LoggerFactory.getLogger("ShowActionHandler." + showMgmt.ShowAnimationActionHandler.DEFAULT_NAME)
 if(logHandlerAnimation) logHandlerAnimation.setLevel(showMgmt.LogLevel.TRACE)
 
 
