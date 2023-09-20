@@ -541,10 +541,10 @@ sequenceDiagram
     
     ShowManager->> ShowManager : playVideo
     ShowManager->> VideoSystem : init
-    VideoSystem->>onVideoEvent: subscribe
+    VideoSystem->>videoEventsSystem: register
     VideoSystem->> SubtitleSystem : init
-    loop onVideo event
-        onVideoEvent->>VideoSystem: notify video event
+    loop videoEvent
+        videoEventsSystem->>VideoSystem: notify video event
     end
     ShowManager->> SubtitleSystem : subscribe.onCueBeginListeners
     loop onUpdate(dt)
@@ -579,10 +579,10 @@ videoEventsSystem.registerVideoEventsEntity(
 
 ```
 
-You may be wondering, why don't we just use the video event? It is because the update event does not fire frequently enough to get precise time. If we only need to know currentOffset updated every second we would be done. But for syncing of actions to video we need it to be much more precise. Note that the old way of doing this was using an onVideoEvent listener. You can still use that method, but it's been deprecated in SDK7.
+You may be wondering, why don't we just use the videoEventsSystem's videoEvent? It is because the update event does not fire frequently enough to get precise time. If we only need to know currentOffset updated every second we would be done. But for syncing of actions to video we need it to be much more precise. Note that the old way of doing this was using an onVideoEvent listener. You can still use that method, but it's been deprecated in SDK7.
 
 
-The VideoSystem keeps track of the delta time from the game clock. The triggered video event tells the system when the video is playing. While the video is playing, the system can increment its estimatedOffset using the currentOffset provided by the video event. We can now keep track of what time in the video we are at with subsecond precision.  
+The VideoSystem keeps track of the delta time from the game clock. The triggered videoEvent tells the system when the video is playing. While the video is playing, the system can increment its estimatedOffset using the currentOffset provided by the video event. We can now keep track of what time in the video we are at with subsecond precision.  
 
 Now that when we have a precise video offset we can make use of a SubtitleSystem. The system reads in an SRT format, and using the known video offset decides which actions to fire.
 
