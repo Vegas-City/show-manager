@@ -1,6 +1,6 @@
 {
   "name": "show-manager",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Decentraland Show Manager",
   "main": "index.js",
   "typings": "index.d.ts",
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/Vegas-City/show-manager#readme",
   "devDependencies": {
-    "@dcl/sdk": "^7.3.1",
+    "@dcl/sdk": "next",
     "typescript": "^5.2.2"
   },
   "dependencies": {
