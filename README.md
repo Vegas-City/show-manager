@@ -32,7 +32,7 @@ To use any of the helpers provided by this library:
 2. Add this line at the start of your game.ts file, or any other TypeScript files that require it:
 
    ```ts
-   import * as showMgmt from 'show-manager/dist'
+   import * as showMgmt from 'show-manager/src'
    ```
 
 
@@ -44,7 +44,7 @@ To use any of the helpers provided by this library:
 You will need need to create a ShowManager instance to start and assign it a schedule
 
 ```ts
-import * as showMgmt from 'show-manager/dist'
+import * as showMgmt from 'show-manager/src'
 
 const showData: showMgmt.ShowDataType = ...
 
@@ -101,7 +101,7 @@ Here is one of many free helpful converter tools [https://www.epochconverter.com
 #### Configure Show Example
 
 ```ts
-import * as showMgmt from 'show-manager/dist'
+import * as showMgmt from 'show-manager/src'
 
 //while testing this can ensure the video start time is always 5 seconds after scene load
 const testStartTime = new Date(Date.now() + (5 *1000)).getTime() / 1000   
@@ -158,7 +158,7 @@ See [Show Action Handlers](#Show-Action-Handlers) for how the actions in the sub
 You will need need to create a RunOfShowSystem instance should you want the show to play by itself when the startTime dictates
 
 ```ts
-import * as showMgmt from 'show-manager/dist'
+import * as showMgmt from 'show-manager/src'
 
 export const runOfShow = new showMgmt.RunOfShowSystem(SHOW_MGR)
 
@@ -174,7 +174,7 @@ The Show Manager has no knowlege of your scene and how it should react to the vi
 * addVideoStatusChangeListener
 
 ```ts
-import * as showMgmt from 'show-manager/dist'
+import * as showMgmt from 'show-manager/src'
 
 SHOW_MGR.addStopShowListeners( (event:showMgmt.StopShowEvent)=>{
   console.log("addStopShowListeners fired", event)
