@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/Vegas-City/show-manager#readme",
   "devDependencies": {
-    "@dcl/sdk": "next",
+    "@dcl/sdk": "latest",
     "typescript": "^5.2.2"
   },
   "dependencies": {
