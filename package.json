@@ -1,6 +1,6 @@
 {
   "name": "show-manager",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Decentraland Show Manager",
   "main": "index.js",
   "typings": "index.d.ts",

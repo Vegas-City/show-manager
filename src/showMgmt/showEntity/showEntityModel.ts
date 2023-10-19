@@ -44,7 +44,6 @@ export class ShowEntityModel extends ShowEntitySupport {
       this.ensureHasAnimator()
 
       this.idleAnim = {
-        name: extArgs.idleAnim,
         clip: extArgs.idleAnim,
         playing: false,
         loop: true
@@ -114,7 +113,7 @@ export class ShowEntityModel extends ShowEntitySupport {
 
     let newAnim: PBAnimationState | null = null
     for (let state of animator.states) {
-      if (state.name == animationName || state.clip == animationName) {
+      if (state.clip == animationName) {
         newAnim = state
         break
       }
@@ -122,7 +121,6 @@ export class ShowEntityModel extends ShowEntitySupport {
 
     if (newAnim === undefined || newAnim === null) {
       newAnim = {
-        name: animationName,
         clip: animationName,
         playing: false,
         loop: !noLoop
@@ -182,8 +180,7 @@ export class ShowEntityModel extends ShowEntitySupport {
 
     const animator = Animator.getMutable(this.entity)
     for (let state of animator.states) {
-      if (state.name == this.idleAnim.name || state.clip == this.idleAnim.clip) {
-        state.name = animName
+      if (state.clip == this.idleAnim.clip) {
         state.clip = animName
         state.playing = false
         state.loop = true

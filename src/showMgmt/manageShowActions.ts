@@ -12,28 +12,6 @@ import { ManageShowDebugUI } from './manageShowDebugUI'
 // Default beats per minute of show
 export const DEFAULT_BPM = 120
 
-/*
-@Component("dcl.show.action.handler")
-export class ShowActionMember{
-  enabled:boolean
-}*/
-
-/*
-const bpm = new ShowBpmActionHandler()
-const bpmH = new ShowBpmActionHandler()
-bpmH.name = ()=>{return 'BPMx'}
-log("TEST")
-log("TEST",bpm.name(),bpmH.name())
-bpmH.name = ()=>{return 'BPMxXX'}
-log("TEST",bpm.name(),bpmH.name())
-
-const aa = new ShowAnimationActionHandler()
-const AA = new ShowAnimationActionHandler()
-AA.decodeAction=(action: string):ActionHandlerAnimationParams=>{ return {animationName:"bb"} }  
-log("TEST",aa.execute("a",undefined),AA.execute('A',undefined))
- */
-//const showActionMembers = engine.getComponentGroup(ShowActionMember)
-
 export class FindEntityResult {
   names: string[]
   results: any[]
