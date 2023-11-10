@@ -5,6 +5,7 @@ import { Logger, LoggerFactory } from "../../logging/logging";
 import { SubtitleSystem } from "../../subtitle/SubtitleSystem";
 import { ManageShowDebugUI } from "../manageShowDebugUI";
 import { VideoSystem } from "./VideoSystem";
+import * as utils from '@dcl-sdk/utils'
 
 export class SubtitleVideoSystem extends VideoSystem {
   static instance: SubtitleVideoSystem | null = null
@@ -60,7 +61,15 @@ export class SubtitleVideoSystem extends VideoSystem {
 
     const videoPlayer = VideoPlayer.getMutableOrNull(this.videoPlayerEntity)
     if (videoPlayer) {
-      videoPlayer.position = offsetSeconds
+      VideoPlayer.deleteFrom(this.videoPlayerEntity)
+
+      utils.timers.setInterval((function () {
+        VideoPlayer.createOrReplace(this.videoPlayerEntity, {
+          src: videoPlayer.src,
+          position: offsetSeconds,
+          playing: true
+        })
+      }).bind(this), 4000)
     }
   }
   seek(offsetSeconds: number) {

@@ -1,6 +1,6 @@
 {
   "name": "show-manager",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Decentraland Show Manager",
   "main": "index.js",
   "typings": "index.d.ts",
@@ -22,7 +22,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@dcl-sdk/utils": "^1.1.2",
+    "@dcl-sdk/utils": "^1.1.3",
     "dcl-ui-toolkit": "^0.9.1",
     "sdk7-npc-utils": "^1.0.0"
   }
