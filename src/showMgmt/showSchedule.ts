@@ -7,8 +7,8 @@ let PLAYING_DEFAULT: boolean = false
 //export let currentlyPlaying: number | null
 
 export class ShowSchedule {
-  private showData: ShowDataType
-  shows: ShowType[]
+  private showData: ShowDataType | undefined = undefined
+  shows: ShowType[] = []
 
   //// key functions
 
@@ -24,7 +24,7 @@ export class ShowSchedule {
    */
   setData(showData: ShowDataType) {
     this.showData = showData
-    this.shows = showData.shows.sort((a, b) => (a.startTime < b.startTime) ? -1 : 1);
+    this.shows = showData.shows.sort((a, b) => ((a.startTime ?? 0) < (b.startTime ?? 0)) ? -1 : 1);
     //process it
   }
 
@@ -65,7 +65,7 @@ export class ShowSchedule {
 
   findShowToPlayByDate(date: Date, startIndex?: number): ShowMatchRangeResult {
     //log("findShowToPlayByDate",date.getTime(),startIndex)
-    if (startIndex < 0) {
+    if (!startIndex || startIndex < 0) {
       startIndex = 0
     }
     const showMatch: ShowMatchRangeResult = {}
@@ -84,13 +84,12 @@ export class ShowSchedule {
    * @returns 
    */
   findShowToPlayByDateInPlace(showMatch: ShowMatchRangeResult, date: Date, startIndex?: number): ShowMatchRangeResult {
-    //log("findShowToPlayByDate",date.getTime(),startIndex)
-    if (startIndex < 0) {
+    if (!startIndex || startIndex < 0) {
       startIndex = 0
     }
     const unixTime = date.getTime() / 1000
 
-    let showPlaying: ShowType
+    let showPlaying: ShowType | undefined
     let counter = 0
     let showPlayingIndex = -1
 
@@ -98,7 +97,7 @@ export class ShowSchedule {
 
     //debugger
 
-    let nearestShowToNow: ShowType
+    let nearestShowToNow: ShowType | undefined = undefined
     let nearestShowIndex = 0
     let nearestShowToNowDiff = Number.MAX_VALUE
 
@@ -136,7 +135,7 @@ export class ShowSchedule {
       if (
         show.startTime > 0
         && show.startTime < unixTime
-        && show.startTime + show.length > unixTime
+        && show.startTime + (show.length ?? 0) > unixTime
       ) {
         showPlaying = show
         showPlayingIndex = index
@@ -152,11 +151,15 @@ export class ShowSchedule {
 
     if (showPlaying !== undefined) {
       showMatch.currentShow = inPlaceOrAssignShow(showMatch.currentShow, showPlaying, -1, showPlayingIndex)
-      showMatch.currentShow.offset = unixTime - showPlaying.startTime
+      if (showMatch.currentShow) {
+        showMatch.currentShow.offset = unixTime - (showPlaying.startTime ?? 0)
+      }
 
       if (showPlayingIndex - 1 > 0) {
         showMatch.lastShow = inPlaceOrAssignShow(showMatch.lastShow, sortedShows[showPlayingIndex - 1], -1, showPlayingIndex - 1)
-        showMatch.lastShow.offset = unixTime - showMatch.lastShow.show.startTime
+        if (showMatch.lastShow) {
+          showMatch.lastShow.offset = unixTime - (showMatch.lastShow.show?.startTime ?? 0)
+        }
       } else {
         resetShowInst(showMatch.lastShow)
       }
@@ -168,10 +171,12 @@ export class ShowSchedule {
     } else {
       resetShowInst(showMatch.currentShow)
 
-      if (nearestShowToNow.startTime < unixTime) {
+      if ((nearestShowToNow?.startTime ?? 0) < unixTime) {
         //in past
         showMatch.lastShow = inPlaceOrAssignShow(showMatch.lastShow, sortedShows[nearestShowIndex], -1, nearestShowIndex)
-        showMatch.lastShow.offset = unixTime - showMatch.lastShow.show.startTime
+        if (showMatch.lastShow) {
+          showMatch.lastShow.offset = unixTime - (showMatch.lastShow.show?.startTime ?? 0)
+        }
 
         if (nearestShowIndex + 1 < sortedShows.length) {
           showMatch.nextShow = inPlaceOrAssignShow(showMatch.nextShow, sortedShows[nearestShowIndex + 1], -1, nearestShowIndex + 1)
@@ -186,7 +191,7 @@ export class ShowSchedule {
     }
 
     if (showMatch.nextShow && showMatch.nextShow.show) {
-      showMatch.nextShow.offset = showMatch.nextShow.show.startTime - unixTime
+      showMatch.nextShow.offset = (showMatch.nextShow.show.startTime ?? 0) - unixTime
     }
 
 
@@ -195,7 +200,7 @@ export class ShowSchedule {
 
 }
 
-function resetShowInst(show: ShowResultType) {
+function resetShowInst(show: ShowResultType | undefined) {
   if (!show) return
 
   show.show = undefined
@@ -211,7 +216,9 @@ function resetShowInst(show: ShowResultType) {
  * @param index 
  * @returns 
  */
-function inPlaceOrAssignShow(currentShow: ShowResultType, show: ShowType, offset: number, index: number) {
+function inPlaceOrAssignShow(currentShow: ShowResultType | undefined, show: ShowType | undefined, offset: number, index: number) {
+  if (show === undefined) return currentShow
+
   if (!currentShow) {
     currentShow = { show: show, offset: offset, index: index }
   } else {

@@ -23,6 +23,6 @@ export class ShowAnounceActionHandler extends ShowActionHandlerSupport<ActionHan
   }
 
   process(action: ActionParams<ActionHandlerAnouncementParams>, showActionMgr: ShowActionManager): void {
-    ui.createComponent(ui.Announcement, { value: action.params.text, duration: action.params.duration, size: action.params.fontSize, startHidden: false })
+    if (action.params) ui.createComponent(ui.Announcement, { value: action.params.text, duration: action.params.duration, size: action.params.fontSize, startHidden: false })
   }
 }

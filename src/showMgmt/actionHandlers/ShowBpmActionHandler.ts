@@ -16,7 +16,7 @@ export class ShowBpmActionHandler extends ShowActionHandlerSupport<number>{
   decodeAction(action: string, showActionMgr: ShowActionManager): ActionParams<number> {
     const bpmResults = super.decodeAction(action, showActionMgr)
 
-    if (bpmResults.array.length >= 2) {
+    if (bpmResults.array && bpmResults.array.length >= 2) {
       const bpm = parseFloat(bpmResults.array[1])
       bpmResults.params = bpm
     } else {
@@ -27,7 +27,7 @@ export class ShowBpmActionHandler extends ShowActionHandlerSupport<number>{
     return bpmResults
   }
   process(action: ActionParams<number>, showActionMgr: ShowActionManager): void {
-    showActionMgr.bpm = action.params
+    showActionMgr.bpm = action.params ?? 0
 
   }
   execute(action: string, show: ShowActionManager) {

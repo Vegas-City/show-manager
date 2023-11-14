@@ -21,16 +21,16 @@ export class ShowHUD {
     //as a property lets users change it if need be
     imageAtlas = "images/controlUI.png"
 
-    onRunOfShowRestart: () => void
-    onPause: () => void
-    onPlay: () => void
-    onPlayNext: () => void
-    onPlayPrev: () => void
-    onRunOfShowPlay: () => void
-    onRunOfShowPause: () => void
+    onRunOfShowRestart: () => void = () => { }
+    onPause: () => void = () => { }
+    onPlay: () => void = () => { }
+    onPlayNext: () => void = () => { }
+    onPlayPrev: () => void = () => { }
+    onRunOfShowPlay: () => void = () => { }
+    onRunOfShowPause: () => void = () => { }
 
     clickAnimationActive: boolean = false
-    clickAnimationButton: ClickAnimationButton
+    clickAnimationButton: ClickAnimationButton = ClickAnimationButton.PAUSE_PLAY
     clickAnimationTimer: number = 0.1
 
     noticeActive: boolean = false
@@ -439,7 +439,7 @@ export class ShowHUD {
     setNotificationText(): void {
         this.notificationLabelValue = "Disable run of show first!"
 
-        if(this.notificationTimerId > 0) {
+        if (this.notificationTimerId > 0) {
             utils.timers.clearTimeout(this.notificationTimerId)
         }
         const self = this

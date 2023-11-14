@@ -19,11 +19,11 @@ let PLAYING_DEFAULT: boolean = false
 
 export class ShowManager {
   logger: Logger
-  currentlyPlaying: ShowType | null
-  nextToPlay: ShowType | null
+  currentlyPlaying: ShowType | null = null
+  nextToPlay: ShowType | null = null
 
   actionMgr: ShowActionManager
-  videoSystem: SubtitleVideoSystem
+  videoSystem: SubtitleVideoSystem | null = null
   subtitleSystem: SubtitleSystem | null = null
 
   showSchedule: ShowSchedule
@@ -32,12 +32,12 @@ export class ShowManager {
   stopShowListeners: ((event: StopShowEvent) => void)[] = []
   changeStatusListeners: VideoChangeStatusListener[] = []
 
-  sceneNotActiveYetToPlay: ShowType | null
+  sceneNotActiveYetToPlay: ShowType | null = null
   playPermissionsRequiredEnabled = false
   checkFirstTimeDone = false //default is true, only if you need sceneActive controls will you use this
   playPermissionsGiven = false //default is true, only if you need sceneActive controls will you use this
 
-  manageShowDebugUI: ManageShowDebugUI
+  manageShowDebugUI: ManageShowDebugUI | undefined = undefined
 
   //latestWorldTime:Date
 
@@ -126,10 +126,10 @@ export class ShowManager {
     let currentTime = Date.now() / 1000
 
     let startTime = showData.startTime
-    let timeDiff = currentTime - startTime
+    let timeDiff = currentTime - (startTime ?? 0)
 
     //of start time is negative its not a schedule play song 
-    if (showData.startTime < 0) {
+    if (!showData.startTime || showData.startTime < 0) {
       this.logger.info(METHOD_NAME, "startShow was negative, dont calculate timeDiff")
       timeDiff = 0
     }
@@ -148,8 +148,8 @@ export class ShowManager {
       showData
     )
 
-    if (timeDiff >= showData.length * 60) {
-      if (startTime < 0) { //if negative start time it can be played on demand
+    if (timeDiff >= (showData.length ?? 0) * 60) {
+      if (!startTime || startTime < 0) { //if negative start time it can be played on demand
         this.logger.info(METHOD_NAME, 'starting show anyways, ', timeDiff, ' seconds late')
         //start anyways
         this.playVideo(showData, timeDiff)
@@ -234,6 +234,8 @@ export class ShowManager {
     }
   }
   processExpiredCues(offsetSeconds: number) {
+    if (!this.subtitleSystem) return
+
     const METHOD_NAME = "processOnCueBegin"
     const offsetMS = (offsetSeconds) * 1000
     // Filter by cues with time window in 'newOffset'
@@ -277,7 +279,7 @@ export class ShowManager {
     }
 
     if (this.manageShowDebugUI && this.manageShowDebugUI.enabled) {
-      this.manageShowDebugUI.updateDisplayNameValue(showData.artist)
+      this.manageShowDebugUI.updateDisplayNameValue(showData.artist ?? "")
     }
 
     this.currentlyPlaying = showData
@@ -288,12 +290,12 @@ export class ShowManager {
     }
     if (showData.loop !== undefined) myVideoPlayer.loop = showData.loop
 
-    if(this.subtitleSystem === undefined || this.subtitleSystem === null) {
+    if (this.subtitleSystem === undefined || this.subtitleSystem === null) {
       this.subtitleSystem = new SubtitleSystem()
       this.registerListenerToSubtitle(this.subtitleSystem)
     }
 
-    this.subtitleSystem.setSubtitlesString(showData.subs)
+    this.subtitleSystem.setSubtitlesString(showData.subs ?? "")
 
     //prescan for errors / load define definitions
     this.processExpiredCues(offsetSeconds)
@@ -306,7 +308,7 @@ export class ShowManager {
           this.logger.info(METHOD_NAME, "SEEKING!!!!", offsetSeconds, this.currentlyPlaying)
           if (firstTimePlaying) {
             firstTimePlaying = false
-            this.videoSystem.setOffsetSeekVideo(offsetSeconds)
+            this.videoSystem?.setOffsetSeekVideo(offsetSeconds)
           }
 
           onPlaySeek.enabled = false
@@ -324,8 +326,10 @@ export class ShowManager {
       this.videoSystem = new SubtitleVideoSystem(myVideoPlayer, this.subtitleSystem, this.manageShowDebugUI)
     }
     else {
-      this.videoSystem.reset(myVideoPlayer)
+      this.videoSystem?.reset(myVideoPlayer)
     }
+
+    if (!this.videoSystem) return
 
     this.videoSystem.changeStatusListeners.push(
       new VideoChangeStatusListener((oldStatus: VideoState, newStatus: VideoState) => {
@@ -358,10 +362,14 @@ export class ShowManager {
     this.changeStatusListeners.push(listener)
   }
   isDefaultVideoPlaying() {
-    return this.isCurrentlyPlaying(this.showSchedule.getDefaultVideo())
+    const defaultVideo = this.showSchedule.getDefaultVideo()
+    if (defaultVideo) return this.isCurrentlyPlaying(defaultVideo)
+
+    return false
   }
   playDefaultVideo() {
-    this.startShow(this.showSchedule.getDefaultVideo())
+    const defaultVideo = this.showSchedule.getDefaultVideo()
+    if (defaultVideo) this.startShow(defaultVideo)
 
     PLAYING_DEFAULT = true
   }

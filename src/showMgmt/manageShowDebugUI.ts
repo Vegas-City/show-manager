@@ -7,8 +7,8 @@ export class ManageShowDebugUI {
 
   private static instance: ManageShowDebugUI
 
-  displayNameValue: string
-  videoTimeValue: string
+  displayNameValue: string = ""
+  videoTimeValue: string = ""
   enabled: boolean = false
   checkIntervalSeconds = .1
   UI_timeLapse = 0
@@ -22,7 +22,7 @@ export class ManageShowDebugUI {
   actionMgrErrors: number = 0
 
 
-  showHud: ShowHUD
+  showHud: ShowHUD | undefined = undefined
 
   public static getInstance(): ManageShowDebugUI {
     if (!ManageShowDebugUI.instance) {
@@ -36,6 +36,8 @@ export class ManageShowDebugUI {
     this.showHud = new ShowHUD()
   }
   setVideoStatus(val: string) {
+    if (!this.showHud) return
+
     this.showHud.videoStatusValue = val
   }
   updateVideoTimeValue(videoEstimatedOffset: number, elapsedTime: number, subtitleSystemOffsetMs: number) {
@@ -80,7 +82,7 @@ export class ManageShowDebugUI {
 }
 
 function playNext(manageShowDebugUI: ManageShowDebugUI, showMgr: ShowManager, runOfShow: RunOfShowSystem, dir: number) {
-
+  if (!manageShowDebugUI.showHud) return
 
   if (runOfShow && runOfShow.enabled) {
     manageShowDebugUI.showHud.setNotificationText()
@@ -89,7 +91,7 @@ function playNext(manageShowDebugUI: ManageShowDebugUI, showMgr: ShowManager, ru
   let fromTime = new Date()
   if (showMgr.currentlyPlaying) {
 
-    fromTime = new Date((showMgr.currentlyPlaying.startTime * 1000) + 1000)
+    fromTime = new Date(((showMgr.currentlyPlaying.startTime ?? 0) * 1000) + 1000)
     console.log("findShowToPlayByDate.showMgr.currentlyPlaying", showMgr.currentlyPlaying, "fromTime", fromTime.toLocaleString())
   }
 
@@ -100,7 +102,7 @@ function playNext(manageShowDebugUI: ManageShowDebugUI, showMgr: ShowManager, ru
     if (showMgr.videoSystem) showMgr.videoSystem.stop()
     utils.timers.setTimeout(
       function () {
-        showMgr.playVideo(showToPlay.show, 0)
+        if (showToPlay.show) showMgr.playVideo(showToPlay.show, 0)
       },
       100
     )
@@ -110,6 +112,7 @@ function playNext(manageShowDebugUI: ManageShowDebugUI, showMgr: ShowManager, ru
 }
 
 export function registerWithDebugUI(manageShowDebugUI: ManageShowDebugUI, showMgr: ShowManager, runOfShow: RunOfShowSystem) {
+  if (!manageShowDebugUI.showHud) return
 
   manageShowDebugUI.showHud.onPause = () => { showMgr.pause() }
   manageShowDebugUI.showHud.onPlay = () => { showMgr.play() }
@@ -126,17 +129,21 @@ export function registerWithDebugUI(manageShowDebugUI: ManageShowDebugUI, showMg
 
     //push show schedule up
     const showData = showMgr.showSchedule.getData()
-    for (const p in showData.shows) {
-      const show = showData.shows[p]
-      if (show.startTime > 0) {
-        show.startTime = new Date(Date.now() + counter + padding).getTime() / 1000
+    if (showData) {
+      for (const p in showData.shows) {
+        const show = showData?.shows[p]
+        if (show) {
+          if (show.startTime && show.startTime > 0) {
+            show.startTime = new Date(Date.now() + counter + padding).getTime() / 1000
 
-        counter += padding + (show.length * 1000)
+            counter += padding + ((show.length ?? 0) * 1000)
+          }
+        }
       }
+      showMgr.showSchedule.setData(showData)
+      showMgr.stopShow()
+      runOfShow.reset()
+      runOfShow.enabled = true
     }
-    showMgr.showSchedule.setData(showData)
-    showMgr.stopShow()
-    runOfShow.reset()
-    runOfShow.enabled = true
   }
 }

@@ -64,7 +64,7 @@ export class RunOfShowSystem {
 
     if (showMatch && showMatch.lastShow && showMatch.lastShow.show) {
       //update index for faster checking
-      this.lastShowIdx = showMatch.lastShow.index
+      this.lastShowIdx = showMatch.lastShow.index ?? 0
     }
 
     this.processShow(showMatch)

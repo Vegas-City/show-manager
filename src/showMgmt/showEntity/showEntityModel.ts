@@ -146,11 +146,11 @@ export class ShowEntityModel extends ShowEntitySupport {
         playOnceAndIdle(this, newAnim, duration, resetAnimation)
         const self = this
         this.intervalAnimTimerId = utils.timers.setInterval(function () {
-          playOnceAndIdle(self, newAnim, duration)
+          if (newAnim) playOnceAndIdle(self, newAnim, duration)
         }, interval * 1000)
       } else if (duration) {
         // play once & idle
-        playOnceAndIdle(this, newAnim, duration, resetAnimation)
+        if (newAnim) playOnceAndIdle(this, newAnim, duration, resetAnimation)
       } else {
         // play once and stay on last frame
         newAnim.loop = false
@@ -180,7 +180,7 @@ export class ShowEntityModel extends ShowEntitySupport {
 
     const animator = Animator.getMutable(this.entity)
     for (let state of animator.states) {
-      if (state.clip == this.idleAnim.clip) {
+      if (state.clip == this.idleAnim?.clip) {
         state.clip = animName
         state.playing = false
         state.loop = true

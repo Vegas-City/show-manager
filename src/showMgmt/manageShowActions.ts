@@ -13,19 +13,19 @@ import { ManageShowDebugUI } from './manageShowDebugUI'
 export const DEFAULT_BPM = 120
 
 export class FindEntityResult {
-  names: string[]
-  results: any[]
-  missing: string[]
+  names: string[] = []
+  results: any[] = []
+  missing: string[] = []
   //resolver:any
 }
 
 export class ShowActionManager {
   defaultBPM: number = DEFAULT_BPM
   bpm: number = DEFAULT_BPM
-  randomizerSystem: RandomizerSystem
+  randomizerSystem: RandomizerSystem | undefined = undefined
   logger: Logger
 
-  manageShowDebugUI: ManageShowDebugUI
+  manageShowDebugUI: ManageShowDebugUI | undefined = undefined
 
   registeredShowEntities: Record<string, any> = {}
   registeredActionHandlerMap: Record<string, ShowActionHandler<any>> = {}
@@ -33,8 +33,8 @@ export class ShowActionManager {
 
   //silenceHandlerErrors:boolean = false;
 
-  extRunAction: (action: string) => boolean
-  overrideRunAction: (action: string) => boolean
+  extRunAction: (action: string) => boolean = (action: string) => { return false }
+  overrideRunAction: (action: string) => boolean = (action: string) => { return false }
 
 
   constructor() {
@@ -143,7 +143,7 @@ export class ShowActionManager {
       if (Array.isArray(handlers)) {
         for (const p in handlers) {
           const handler = handlers[p]
- 
+
           this.processAction(action, handler)
         }
       } else {
@@ -246,7 +246,7 @@ export class RandomizerSystem {
   showMgr: ShowActionManager
   timer: number = 0
   beats: number = 8
-  events: string[]
+  events: string[] = []
   lastPlayed: number | null = null
 
   active: boolean = false

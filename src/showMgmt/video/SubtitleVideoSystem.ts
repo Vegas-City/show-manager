@@ -8,10 +8,10 @@ import { VideoSystem } from "./VideoSystem";
 import * as utils from '@dcl-sdk/utils'
 
 export class SubtitleVideoSystem extends VideoSystem {
-  static instance: SubtitleVideoSystem | null = null
+  static instance: SubtitleVideoSystem | undefined = undefined
 
-  subtitleSystem: SubtitleSystem
-  manageShowDebugUI: ManageShowDebugUI | null = null
+  subtitleSystem: SubtitleSystem | undefined = undefined
+  manageShowDebugUI: ManageShowDebugUI | undefined = undefined
   logger: Logger
 
   constructor(_videoPlayer: PBVideoPlayer, subtitleSystem?: SubtitleSystem, manageShowDebugUI?: ManageShowDebugUI) {
@@ -21,15 +21,15 @@ export class SubtitleVideoSystem extends VideoSystem {
     this.logger = LoggerFactory.getLogger("SubtitleVideoSystem")
 
 
-    if (SubtitleVideoSystem.instance === undefined || SubtitleVideoSystem.instance === null) {
+    if (SubtitleVideoSystem.instance === undefined) {
       SubtitleVideoSystem.instance = this
       engine.addSystem(SubtitleVideoSystem.update)
     }
   }
   reset(_videoPlayer: PBVideoPlayer) {
     super.reset(_videoPlayer)
-    this.subtitleSystem.pause()
-    if(this.manageShowDebugUI) this.manageShowDebugUI.setToLoading()
+    this.subtitleSystem?.pause()
+    if (this.manageShowDebugUI) this.manageShowDebugUI.setToLoading()
   }
   stop() {
     const videoPlayer = VideoPlayer.getMutableOrNull(this.videoPlayerEntity)
@@ -54,7 +54,7 @@ export class SubtitleVideoSystem extends VideoSystem {
   }
   setOffset(offsetSeconds: number) {
     super.setOffset(offsetSeconds)
-    this.subtitleSystem.setOffset(this.estimatedOffset * 1000)
+    this.subtitleSystem?.setOffset(this.estimatedOffset * 1000)
   }
   setOffsetSeekVideo(offsetSeconds: number) {
     this.setOffset(offsetSeconds)
@@ -63,7 +63,7 @@ export class SubtitleVideoSystem extends VideoSystem {
     if (videoPlayer) {
       VideoPlayer.deleteFrom(this.videoPlayerEntity)
 
-      utils.timers.setInterval((function () {
+      utils.timers.setInterval((() => {
         VideoPlayer.createOrReplace(this.videoPlayerEntity, {
           src: videoPlayer.src,
           position: offsetSeconds,
@@ -80,8 +80,8 @@ export class SubtitleVideoSystem extends VideoSystem {
     if (videoPlayer) {
       videoPlayer.position = offsetSeconds
     }
-    
-    this.subtitleSystem.seekTime(offsetSeconds)
+
+    this.subtitleSystem?.seekTime(offsetSeconds)
   }
   //TODO consider subscription model
   onChangeStatus(oldStatus: VideoState, newStatus: VideoState) {
@@ -112,7 +112,7 @@ export class SubtitleVideoSystem extends VideoSystem {
 
   update(dt: number): void {
     super.update(dt)
-    this.subtitleSystem.update(dt)
+    this.subtitleSystem?.update(dt)
 
     if (this.manageShowDebugUI && this.manageShowDebugUI.enabled) {
       this.manageShowDebugUI.updateUICounter(dt)
@@ -121,7 +121,7 @@ export class SubtitleVideoSystem extends VideoSystem {
 
   onOffsetUpdate(estimatedOffset: number) {
     if (this.manageShowDebugUI && this.manageShowDebugUI.enabled) {
-      this.manageShowDebugUI.updateVideoTimeValue(estimatedOffset, this.elapsedTime, this.subtitleSystem.offsetMs)
+      this.manageShowDebugUI.updateVideoTimeValue(estimatedOffset, this.elapsedTime, this.subtitleSystem?.offsetMs ?? 0)
     }
   }
 

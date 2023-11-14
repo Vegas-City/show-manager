@@ -46,6 +46,8 @@ export class ShowAnimationActionHandler extends ShowActionHandlerSupport<ActionH
     //splits into 3 COMMAND TARGET OPTIONS
     const parseResult: ActionParams<ActionHandlerAnimationParams> = super.decodeAction(action, showActionMgr)
 
+    if (!parseResult.params || !parseResult.array) return parseResult
+
     const obj = parseResult.params
 
     obj.target = parseResult.array[1]
@@ -61,6 +63,8 @@ export class ShowAnimationActionHandler extends ShowActionHandlerSupport<ActionH
 
   //name: ShowAnimationActionHandler.DEFAULT_NAME,
   process(actionResult: ActionParams<ActionHandlerAnimationParams>, showActionMgr: ShowActionManager): void {
+    if (!actionResult.params) return
+
     const METHOD_NAME = "process"
     const action = actionResult.params
 

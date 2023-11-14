@@ -19,8 +19,8 @@ export type DefineTargetGroupType = {
  */
 export class DefineTargetGroup {
   name?: string
-  targetNames: string[]
-  targets: any[]
+  targetNames: string[] = []
+  targets: any[] = []
   constructor(args: DefineTargetGroupType) {
     this.name = args.name
     if (args.targetNames) this.targetNames = args.targetNames
