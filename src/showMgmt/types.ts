@@ -36,7 +36,7 @@ export type PlayShowEvent = {
 }
 
 export type ShowResultType = {
-  show: ShowType
+  show?: ShowType
   offset: number
   index: number
 }

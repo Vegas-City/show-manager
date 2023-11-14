@@ -204,8 +204,8 @@ function resetShowInst(show: ShowResultType | undefined) {
   if (!show) return
 
   show.show = undefined
-  show.index = undefined
-  show.offset = undefined
+  show.index = 0
+  show.offset = 0
 }
 
 /**
