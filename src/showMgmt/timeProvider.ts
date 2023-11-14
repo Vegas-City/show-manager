@@ -5,9 +5,9 @@ let PLAYING_DEFAULT: boolean = false
 
 export class TimeProvider {
 
-  promise: Promise<Date>
-  whenMeasured: Date
-  worldTime: Date
+  promise: Promise<Date> | undefined
+  whenMeasured: Date | undefined
+  worldTime: Date | undefined
 
   constructor() {
 
@@ -32,6 +32,10 @@ export class TimeProvider {
   }
 
   now(): number {
+    if (!this.worldTime || !this.whenMeasured) {
+      return Date.now()
+    }
+
     //calculates world time offset
     return this.worldTime.getTime() + (Date.now() - this.whenMeasured.getTime())
   }
