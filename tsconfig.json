@@ -25,10 +25,10 @@
     "jsx": "react",
     "jsxFactory": "ReactEcs.createElement",
     "alwaysStrict": false,
-    "strict": false,
+    "strict": true,
     "strictNullChecks": false,
-    "strictBindCallApply": false,
-    "strictFunctionTypes": false,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
     "strictPropertyInitialization": false,
     "lib": [
       "ES2020"
