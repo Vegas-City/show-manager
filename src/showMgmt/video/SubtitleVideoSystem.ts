@@ -61,15 +61,20 @@ export class SubtitleVideoSystem extends VideoSystem {
 
     const videoPlayer = VideoPlayer.getMutableOrNull(this.videoPlayerEntity)
     if (videoPlayer) {
-      VideoPlayer.deleteFrom(this.videoPlayerEntity)
+      if (offsetSeconds > 10) {
+        VideoPlayer.deleteFrom(this.videoPlayerEntity)
 
-      utils.timers.setInterval((() => {
-        VideoPlayer.createOrReplace(this.videoPlayerEntity, {
-          src: videoPlayer.src,
-          position: offsetSeconds,
-          playing: true
-        })
-      }).bind(this), 4000)
+        utils.timers.setInterval((() => {
+          VideoPlayer.createOrReplace(this.videoPlayerEntity, {
+            src: videoPlayer.src,
+            position: offsetSeconds,
+            playing: true
+          })
+        }).bind(this), 10000)
+      }
+      else {
+        videoPlayer.position = offsetSeconds
+      }
     }
   }
   seek(offsetSeconds: number) {
